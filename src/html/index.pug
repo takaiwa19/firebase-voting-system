@@ -1,0 +1,140 @@
+extends ./_layout/_page.pug
+
+block vars
+  -
+    var page = data.pages.index;
+
+block contentFixedBefore
+
+block contentStatic
+  .p-voting-sysytem#voting-system
+    h1 どの曲が好き？？
+    .p-voting-sysytem__introduce
+      h2 まずは聞いてみて！
+      .p-voting-sysytem__introduce-items
+        .p-voting-sysytem__introduce-item
+          .p-voting-sysytem__introduce-item-video
+            iframe(
+              src="https://www.youtube.com/embed/21ldIGjpYhw" frameborder="0"
+              allow="autoplay; encrypted-media"
+              allowfullscreen
+              )
+          .p-voting-sysytem__introduce-item-title
+            |VENUS
+        .p-voting-sysytem__introduce-item
+          .p-voting-sysytem__introduce-item-video
+            iframe(
+              src="https://www.youtube.com/embed/9E8pcmWavdQ" frameborder="0"
+              allow="autoplay; encrypted-media"
+              allowfullscreen
+              )
+          .p-voting-sysytem__introduce-item-title
+            |HONEY
+        .p-voting-sysytem__introduce-item
+          .p-voting-sysytem__introduce-item-video
+            iframe(
+              src="https://www.youtube.com/embed/Ch1yjnFRmHg" frameborder="0"
+              allow="autoplay; encrypted-media"
+              allowfullscreen
+              )
+          .p-voting-sysytem__introduce-item-title
+            |マチルダ
+        .p-voting-sysytem__introduce-item
+          .p-voting-sysytem__introduce-item-video
+            iframe(
+              src="https://www.youtube.com/embed/ulEyLuBDvRE" frameborder="0"
+              allow="autoplay; encrypted-media"
+              allowfullscreen
+              )
+          .p-voting-sysytem__introduce-item-title
+            |ラブリー
+                
+    .p-voting-sysytem__voting-area
+      h2 気に入った曲を選んで！
+      .p-voting-sysytem__voting-area-items
+        .p-voting-sysytem__voting-area-item
+          input(
+            type="radio"
+            name="voting"
+            value="venus"
+            v-model="selected"
+            )
+          span VENUS
+        .p-voting-sysytem__voting-area-item
+          input(
+            type="radio"
+            name="voting"
+            value="honey"
+            v-model="selected"
+            )
+          span HONEY
+        .p-voting-sysytem__voting-area-item
+          input(
+            type="radio"
+            name="voting"
+            value="matilda"
+            v-model="selected"
+            )
+          span マチルダ
+        .p-voting-sysytem__voting-area-item
+          input(
+            type="radio"
+            name="voting"
+            value="lovely"
+            v-model="selected"
+            )
+          span ラブリー
+      button.p-voting-sysytem__voting-area-btn(
+        @click = "writeNewPost"
+        )
+        |VOTE!
+      
+    .p-voting-sysytem__result
+      h2 どの曲が人気かな？
+      .p-voting-sysytem__result-graph
+        .p-voting-sysytem__result-graph-items
+        
+          .p-voting-sysytem__result-graph-item.p-voting-sysytem__result-graph-item--venus
+            .p-voting-sysytem__result-graph-item-text
+              span.p-voting-sysytem__result-graph-item-label
+                |VENUS:
+              span.p-voting-sysytem__result-graph-item-count
+                |{{ postData.venus }}票
+            .p-voting-sysytem__result-graph-item-rect(
+              :style = 'getVenusWidth'
+              )
+            
+          .p-voting-sysytem__result-graph-item.p-voting-sysytem__result-graph-item--honey
+            .p-voting-sysytem__result-graph-item-text
+              span.p-voting-sysytem__result-graph-item-label
+                |HONEY:
+              span.p-voting-sysytem__result-graph-item-count
+                |{{ postData.honey }}票
+            .p-voting-sysytem__result-graph-item-rect(
+              :style = 'getHoneyWidth'
+              )
+            
+          .p-voting-sysytem__result-graph-item.p-voting-sysytem__result-graph-item--matilda
+            .p-voting-sysytem__result-graph-item-text
+              span.p-voting-sysytem__result-graph-item-label
+                |マチルダ:
+              span.p-voting-sysytem__result-graph-item-count
+                |{{ postData.matilda }}票
+            .p-voting-sysytem__result-graph-item-rect(
+              :style = 'getMatildaWidth'
+              )
+            
+          .p-voting-sysytem__result-graph-item.p-voting-sysytem__result-graph-item--lovely
+            .p-voting-sysytem__result-graph-item-text
+              span.p-voting-sysytem__result-graph-item-label
+                |ラブリー:
+              span.p-voting-sysytem__result-graph-item-count
+                |{{ postData.lovely }}票
+            .p-voting-sysytem__result-graph-item-rect(
+              :style = 'getLovelyWidth'
+              )
+    
+    .p-voting-sysytem__foot
+      |Thank You!!
+
+block contentFixedAfter
