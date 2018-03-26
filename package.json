@@ -55,6 +55,7 @@
     "firebase": "^4.9.1",
     "js-util": "git://github.com/ykob/js-util.git",
     "jstransformer-markdown-it": "^2.0.0",
+    "moment": "^2.21.0",
     "vue": "^2.5.13"
   }
 }

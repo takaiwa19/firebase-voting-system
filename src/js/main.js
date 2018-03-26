@@ -6,6 +6,9 @@ const init = () => {
     case 'index':
       require ('./init/index.js').default();
       break;
+    case 'index2':
+      require ('./init/index2.js').default();
+      break;
     default:
   }
 }
