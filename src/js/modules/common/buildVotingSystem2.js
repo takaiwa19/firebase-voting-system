@@ -2,13 +2,28 @@ const Vue = require('vue/dist/vue.min');
 const firebase = require('firebase');
 const moment = require('moment');
 
+// Firebase初期化
+const config = {
+  apiKey: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  authDomain: "xxxxxxxxxxxxxx.firebaseapp.com",
+  databaseURL: "https://xxxxxxxxxxxxxx.firebaseio.com",
+  projectId: "xxxxxxxxxxxxxx",
+  storageBucket: "xxxxxxxxxxxxxx.appspot.com",
+  messagingSenderId: "xxxxxxxxxxxxxx"
+};
+firebase.initializeApp(config);
+const database = firebase.database();
+const auth = firebase.auth();
+
+
+//Vue
 export default function() {
   return new Vue({
     el: '#voting-system-2',
 
     data: {
-      database: null,
-      auth: null,
+      database: database,
+      auth: auth,
       uid: null,
       voted: null,
       count: {
@@ -24,21 +39,28 @@ export default function() {
         lovely: 'ラブリー'
       },
       voteData: {
-        song: null,
-        timeStamp: null
+        song: -1,
+        timeStamp: 0
       },
       selected: null,
       total: 0,
     },
 
-    mounted: function() {
-      this.initFirebase();
-      this.authenticate();
-      this.initData();
+    created: function() {
+
+      const _this = this;
+      this.database.ref('data').on('value',snapshot => {
+          _this.count = snapshot.val().count;
+          _this.voted = snapshot.val().voted;
+
+          _this.getTotalCount();
+          _this.authenticate();
+        }
+      )
+
     },
 
     computed: {
-
       getVenusWidth() {
         return 'width:' + (this.count.venus / this.total) * 100 + '%';
       },
@@ -54,25 +76,9 @@ export default function() {
       getLovelyWidth() {
         return 'width:' + (this.count.lovely / this.total) * 100 + '%';
       },
-
     },
 
     methods: {
-      initFirebase() {
-        // Firebase初期化
-        const config = {
-          apiKey: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-          authDomain: "xxxxxxxxxxxxxx.firebaseapp.com",
-          databaseURL: "https://xxxxxxxxxxxxxx.firebaseio.com",
-          projectId: "xxxxxxxxxxxxxx",
-          storageBucket: "xxxxxxxxxxxxxx.appspot.com",
-          messagingSenderId: "xxxxxxxxxxxxxx"
-        };
-        firebase.initializeApp(config);
-        this.database = firebase.database();
-        this.auth = firebase.auth();
-      },
-
       authenticate() {
         //匿名認証をする
         this.auth.signInAnonymously().catch(function(error) {
@@ -83,23 +89,13 @@ export default function() {
         });
         //uidを取得
         const _this = this;
-        firebase.auth().onAuthStateChanged(function(user) {
+        this.auth.onAuthStateChanged(function(user) {
           if (user) {
             _this.uid = user.uid;
+            if(!_this.voted.hasOwnProperty(_this.uid)) {
+              _this.database.ref('data/voted/' + _this.uid).set(_this.voteData);
+            }
           }
-        });
-      },
-
-      initData() {
-        const _this = this;
-        _this.database.ref('data/').once('value').then(function(snapshot) {
-          _this.voted = snapshot.val().voted;
-          _this.count.venus = snapshot.val().count.venus;
-          _this.count.honey = snapshot.val().count.honey;
-          _this.count.matilda = snapshot.val().count.matilda;
-          _this.count.lovely = snapshot.val().count.lovely;
-
-          _this.getTotalCount();
         });
       },
 
@@ -113,20 +109,24 @@ export default function() {
         this.count[this.voteData.song] += 1;
       },
 
-      updateNewData() {
-        this.database.ref('data/voted/' + this.uid).set(this.voteData);
+      updateCount() {
+        //各曲の投票数を更新
         const updates = {};
         updates['data/count/'] = this.count;
-        return this.database.ref().update(updates);
+        this.database.ref().update(updates);
+      },
+
+      updateVoted() {
+        //投票者の情報を登録
+        this.database.ref('data/voted/' + this.uid).set(this.voteData);
       },
 
       voteNewPost() {
-        this.initData();
-        //uidがデータベースに既に存在するか
-        if (this.voted.hasOwnProperty(this.uid)) {
+        //対象のuidが過去に投票をしたことがあるか
+        if (!(this.voted[this.uid].timeStamp === 0)) {
           const today = moment().format().slice(0, 10);
           const votedDay = this.voted[this.uid].timeStamp.slice(0, 10);
-          //対象のuidの過去の投票日が今日であるか
+          //過去の投票日が「今日」であるか
           if (votedDay === today) {
             alert('投票は1日1回までです！明日お越しください。');
           } else {
@@ -140,10 +140,12 @@ export default function() {
       writeNewPost() {
         this.getNewData();
         this.getTotalCount();
-        this.updateNewData();
-        alert('投票ありがとうございます！' + this.songName[this.voteData.song] + 'に一票入りました。');
+        this.updateCount();
+        setTimeout(()=> {
+          this.updateVoted();
+          alert('投票ありがとうございます！' + this.songName[this.voteData.song] + 'に一票入りました。');
+        },100)
       },
-
     }
   });
 }
